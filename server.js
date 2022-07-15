@@ -37,3 +37,8 @@ app.get('/getData', (req, res) => {
 // Callback function to complete GET '/all'
 
 // Post Route
+app.post('/sendData', addData);
+function addData(req, res) {
+	projectData = req.body;
+	console.log(req.body);
+}

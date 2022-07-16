@@ -23,22 +23,21 @@ app.use(express.static('website'));
 // Callback to debug
 const port = 8080;
 const server = app.listen(port, listening);
-
 function listening() {
 	console.log('Server is Running Locally!');
 	console.log(`Listening on Port: ${port}`);
 }
 
 // Initialize all route with a callback function
-app.get('/getData', (req, res) => {
-	res.send(projectData);
-});
-
+app.get('/all', getAllData);
 // Callback function to complete GET '/all'
+function getAllData(req, res) {
+	res.send(projectData);
+}
 
 // Post Route
 app.post('/sendData', addData);
 function addData(req, res) {
 	projectData = req.body;
-	console.log(req.body);
+	res.send({ message: 'Sending data to server is a success!' });
 }

@@ -1,40 +1,48 @@
 /* Global Variables */
-const apiKey = 'c75289e2b20c04382c5d80d8d0ee06c3&units=imperial';
-const weatherURL = 'https://api.openweathermap.org/data/2.5/weather?zip=';
-const zipElement = document.getElementById('zip');
-const feelingsElement = document.getElementById('feelings');
-const generateButton = document.getElementById('generate');
+const apiKey = 'c75289e2b20c04382c5d80d8d0ee06c3';
+const openWeatherURL = 'https://api.openweathermap.org/data/2.5/weather?zip=';
+const generate = document.querySelector('#generate');
+const zip = document.querySelector('#zip');
+const feelings = document.querySelector('#feelings');
 
 // Create a new date instance dynamically with JS
 let d = new Date();
 let newDate = d.getMonth() + '.' + d.getDate() + '.' + d.getFullYear();
 
 // Event listener to add function to existing HTML DOM element
-generateButton.addEventListener('click', weatherData);
+generate.addEventListener('click', weatherData);
 /* Function called by event listener */
 function weatherData() {
 	// Handling invalid or empty input fields
-	if (zipElement.value.trim() === '' || feelingsElement.value.trim === '') {
-		alert('zip code and feelings are required fields');
+	if (zip.value.trim() === '' || feelings.value.trim() === '') {
+		alert('zip code and feelings are required fields!');
 		return;
 	}
-
-	getWeatherData(weatherURL, zipElement.value, apiKey)
-		.then((data) =>
-			sendDataToServer({
-				date: newDate,
-				temp: data.main.temp,
-				feelings: feelingsElement.value,
-			})
+	/**
+	 * First, getting weatherData from API.
+	 * After waiting weatherData, send it to the server.
+	 * After sending it to server, return it to front-end by updating the UI
+	 * */
+	getWeatherData(openWeatherURL, zip.value, apiKey)
+		.then(
+			(
+				data // then, send weatherData to server
+			) =>
+				sendDataToServer({
+					date: newDate,
+					temp: data.main.temp,
+					feelings: feelings.value,
+				})
 		)
-		.then(() => getProjectData())
-		.catch((e) => console.log(e));
+		.then(() => getProjectData()) // then, send it to front-end
+		.catch((e) => console.log('error', e));
 }
 
-/* Function to GET Web API Data*/
-async function getWeatherData(baseURL, zipCode, apiKey) {
-	const fetchWeather = await fetch(`${baseURL}${zipCode}&appid=${apiKey}`);
-
+/* Function to GET Web API Data from OpenWeatherMap */
+const getWeatherData = async (baseURL, zipCode, apiKey) => {
+	const fetchWeather = await fetch(
+		`${baseURL}${zipCode}&appid=${apiKey}&units=imperial`
+	);
 	try {
 		const res = await fetchWeather.json();
 		return res;
@@ -42,10 +50,11 @@ async function getWeatherData(baseURL, zipCode, apiKey) {
 		console.log('error', error);
 		throw error;
 	}
-}
+};
 
 /* Function to POST data */
-async function sendDataToServer(data = {}) {
+const sendDataToServer = async (data = {}) => {
+	// making a POST request to assign the "projectData" variable to the new weatherData
 	const newData = await fetch('/sendData', {
 		method: 'POST',
 		credentials: 'same-origin',
@@ -54,7 +63,6 @@ async function sendDataToServer(data = {}) {
 		},
 		body: JSON.stringify(data),
 	});
-
 	try {
 		const res = await newData.json();
 		return res;
@@ -62,27 +70,23 @@ async function sendDataToServer(data = {}) {
 		console.log('error', error);
 		throw error;
 	}
-}
-
-async function fromBetween() {
-	console.log('From Between');
-}
+};
 
 /* Function to GET Project Data */
-async function getProjectData() {
+const getProjectData = async () => {
+	// Making a GET request to get the saved weatherData from the server (from projectData variable)
 	const req = await fetch('/all');
-
 	try {
 		const allData = await req.json();
-		document.getElementById('date').innerHTML = `Today is ${allData.date}`;
-		document.getElementById('temp').innerHTML = `Temperature is ${Math.round(
+		document.querySelector('#date').textContent = `Today is ${allData.date}`;
+		document.querySelector('#temp').textContent = `Temperature is ${Math.round(
 			allData.temp
 		)} degrees`;
-		document.getElementById(
-			'content'
-		).innerHTML = `Your are feeling ${allData.feelings}`;
+		document.querySelector(
+			'#content'
+		).textContent = `Your are feeling ${allData.feelings}`;
 	} catch (error) {
 		console.log('error', error);
 		throw error;
 	}
-}
+};
